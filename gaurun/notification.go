@@ -144,7 +144,7 @@ func pushNotificationAndroid(req RequestGaurunNotification) error {
 	msg.Priority = req.Priority
 
 	stime := time.Now()
-	_, err := GCMClient.SendFix(token, req.Message, "")
+	_, err := GCMClient.SendFix(token, req.Message, "", ConfGaurun.Android.ServiceAccountKeyPath)
 	etime := time.Now()
 	ptime := etime.Sub(stime).Seconds()
 	if err != nil {

@@ -69,8 +69,8 @@ func NewClient(urlString, apiKey string) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) SendFix(token string, title string, message string) (*Response, error) {
-	err := sendFCMNotification(token, title, message)
+func (c *Client) SendFix(token string, title string, message string, keyPath string) (*Response, error) {
+	err := sendFCMNotification(token, title, message, keyPath)
 	if err != nil {
 		return nil, err
 	}
@@ -110,12 +110,11 @@ func (c *Client) Send(msg *Message) (*Response, error) {
 	return &response, err
 }
 
-func sendFCMNotification(token string, title string, body string) error {
+func sendFCMNotification(token string, title string, body string, keyPath string) error {
 	ctx := context.Background()
 
-	// FIXME: pathをconfigから
 	// Firebase Admin SDKの設定ファイルを指定
-	sa := option.WithCredentialsFile("path/to/serviceAccountKey.json")
+	sa := option.WithCredentialsFile(keyPath)
 
 	app, err := firebase.NewApp(ctx, nil, sa)
 	if err != nil {
