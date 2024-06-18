@@ -37,6 +37,7 @@ type SectionAndroid struct {
 	KeepAliveConns        int    `toml:"keepalive_conns"`
 	RetryMax              int    `toml:"retry_max"`
 	ServiceAccountKeyPath string `toml:"service_account_key_path"`
+	ProjectId             string `toml:"project_id"`
 }
 
 type SectionIos struct {

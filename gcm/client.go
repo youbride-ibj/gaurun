@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"net/url"
 
-	firebase "firebase.google.com/go"
-	"firebase.google.com/go/messaging"
+	firebase "firebase.google.com/go/v4"
+	"firebase.google.com/go/v4/messaging"
 	"google.golang.org/api/option"
 )
 
@@ -69,8 +69,8 @@ func NewClient(urlString, apiKey string) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) SendFix(token string, title string, message string, keyPath string) (*Response, error) {
-	err := sendFCMNotification(token, title, message, keyPath)
+func (c *Client) SendFix(token string, title string, message string, keyPath string, projectID string) (*Response, error) {
+	err := sendFCMNotification(token, title, message, keyPath, projectID)
 	if err != nil {
 		return nil, err
 	}
@@ -110,13 +110,14 @@ func (c *Client) Send(msg *Message) (*Response, error) {
 	return &response, err
 }
 
-func sendFCMNotification(token string, title string, body string, keyPath string) error {
+func sendFCMNotification(token string, title string, body string, keyPath string, projectID string) error {
 	ctx := context.Background()
 
 	// Firebase Admin SDKの設定ファイルを指定
-	sa := option.WithCredentialsFile(keyPath)
+	opt := option.WithCredentialsFile(keyPath)
 
-	app, err := firebase.NewApp(ctx, nil, sa)
+	config := &firebase.Config{ProjectID: projectID}
+	app, err := firebase.NewApp(ctx, config, opt)
 	if err != nil {
 		return fmt.Errorf("error initializing app: %v", err)
 	}
