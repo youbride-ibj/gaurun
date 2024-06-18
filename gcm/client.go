@@ -2,10 +2,15 @@ package gcm
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
+
+	firebase "firebase.google.com/go"
+	"firebase.google.com/go/messaging"
+	"google.golang.org/api/option"
 )
 
 const (
@@ -64,18 +69,15 @@ func NewClient(urlString, apiKey string) (*Client, error) {
 	}, nil
 }
 
-// Send sends a message to the FCM server without retrying in case of
-// service unavailability. A non-nil error is returned if a non-recoverable
-// error occurs (i.e. if the response status is not "200 OK").
-func (c *Client) Send(msg *Message) (*Response, error) {
-	if err := msg.validate(); err != nil {
+func (c *Client) SendFix(token string, title string, message string) (*Response, error) {
+	err := sendFCMNotification(token, title, message)
+	if err != nil {
 		return nil, err
 	}
-
-	return c.send(msg)
+	return nil, nil
 }
 
-func (c *Client) send(msg *Message) (*Response, error) {
+func (c *Client) Send(msg *Message) (*Response, error) {
 	var buf bytes.Buffer
 	encoder := json.NewEncoder(&buf)
 	if err := encoder.Encode(msg); err != nil {
@@ -106,4 +108,38 @@ func (c *Client) send(msg *Message) (*Response, error) {
 	}
 
 	return &response, err
+}
+
+func sendFCMNotification(token string, title string, body string) error {
+	ctx := context.Background()
+
+	// FIXME: pathをconfigから
+	// Firebase Admin SDKの設定ファイルを指定
+	sa := option.WithCredentialsFile("path/to/serviceAccountKey.json")
+
+	app, err := firebase.NewApp(ctx, nil, sa)
+	if err != nil {
+		return fmt.Errorf("error initializing app: %v", err)
+	}
+
+	client, err := app.Messaging(ctx)
+	if err != nil {
+		return fmt.Errorf("error getting Messaging client: %v", err)
+	}
+
+	message := &messaging.Message{
+		Token: token,
+		Notification: &messaging.Notification{
+			Title: title,
+			Body:  body,
+		},
+	}
+
+	response, err := client.Send(ctx, message)
+	if err != nil {
+		return fmt.Errorf("error sending message: %v", err)
+	}
+
+	fmt.Printf("Successfully sent message: %s\n", response)
+	return nil
 }
