@@ -2,10 +2,15 @@ package gcm
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
+
+	firebase "firebase.google.com/go/v4"
+	"firebase.google.com/go/v4/messaging"
+	"google.golang.org/api/option"
 )
 
 const (
@@ -64,6 +69,14 @@ func NewClient(urlString, apiKey string) (*Client, error) {
 	}, nil
 }
 
+func (c *Client) SendFix(token string, title string, message string, keyPath string, projectID string) (*Response, error) {
+	err := sendFCMNotification(token, title, message, keyPath, projectID)
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
 // Send sends a message to the FCM server without retrying in case of
 // service unavailability. A non-nil error is returned if a non-recoverable
 // error occurs (i.e. if the response status is not "200 OK").
@@ -106,4 +119,38 @@ func (c *Client) send(msg *Message) (*Response, error) {
 	}
 
 	return &response, err
+}
+
+func sendFCMNotification(token string, title string, body string, keyPath string, projectID string) error {
+	ctx := context.Background()
+
+	// Firebase Admin SDKの設定ファイルを指定
+	opt := option.WithCredentialsFile(keyPath)
+
+	config := &firebase.Config{ProjectID: projectID}
+	app, err := firebase.NewApp(ctx, config, opt)
+	if err != nil {
+		return fmt.Errorf("error initializing app: %v", err)
+	}
+
+	client, err := app.Messaging(ctx)
+	if err != nil {
+		return fmt.Errorf("error getting Messaging client: %v", err)
+	}
+
+	message := &messaging.Message{
+		Token: token,
+		Notification: &messaging.Notification{
+			Title: title,
+			Body:  body,
+		},
+	}
+
+	response, err := client.Send(ctx, message)
+	if err != nil {
+		return fmt.Errorf("error sending message: %v", err)
+	}
+
+	fmt.Printf("Successfully sent message: %s\n", response)
+	return nil
 }

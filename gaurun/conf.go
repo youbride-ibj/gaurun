@@ -30,12 +30,14 @@ type SectionCore struct {
 }
 
 type SectionAndroid struct {
-	Enabled          bool   `toml:"enabled"`
-	ApiKey           string `toml:"apikey"`
-	Timeout          int    `toml:"timeout"`
-	KeepAliveTimeout int    `toml:"keepalive_timeout"`
-	KeepAliveConns   int    `toml:"keepalive_conns"`
-	RetryMax         int    `toml:"retry_max"`
+	Enabled               bool   `toml:"enabled"`
+	ApiKey                string `toml:"apikey"`
+	Timeout               int    `toml:"timeout"`
+	KeepAliveTimeout      int    `toml:"keepalive_timeout"`
+	KeepAliveConns        int    `toml:"keepalive_conns"`
+	RetryMax              int    `toml:"retry_max"`
+	ServiceAccountKeyPath string `toml:"service_account_key_path"`
+	ProjectId             string `toml:"project_id"`
 }
 
 type SectionIos struct {
@@ -80,6 +82,8 @@ func BuildDefaultConf() ConfToml {
 	conf.Android.KeepAliveTimeout = 90
 	conf.Android.KeepAliveConns = numCPU
 	conf.Android.RetryMax = 1
+	conf.Android.ServiceAccountKeyPath = ""
+	conf.Android.ProjectId = ""
 	// iOS
 	conf.Ios.Enabled = true
 	conf.Ios.PemCertPath = ""
