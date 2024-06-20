@@ -77,7 +77,18 @@ func (c *Client) SendFix(token string, title string, message string, keyPath str
 	return nil, nil
 }
 
+// Send sends a message to the FCM server without retrying in case of
+// service unavailability. A non-nil error is returned if a non-recoverable
+// error occurs (i.e. if the response status is not "200 OK").
 func (c *Client) Send(msg *Message) (*Response, error) {
+	if err := msg.validate(); err != nil {
+		return nil, err
+	}
+
+	return c.send(msg)
+}
+
+func (c *Client) send(msg *Message) (*Response, error) {
 	var buf bytes.Buffer
 	encoder := json.NewEncoder(&buf)
 	if err := encoder.Encode(msg); err != nil {
