@@ -83,6 +83,7 @@ func BuildDefaultConf() ConfToml {
 	conf.Android.KeepAliveConns = numCPU
 	conf.Android.RetryMax = 1
 	conf.Android.ServiceAccountKeyPath = ""
+	conf.Android.ProjectId = ""
 	// iOS
 	conf.Ios.Enabled = true
 	conf.Ios.PemCertPath = ""
